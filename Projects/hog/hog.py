@@ -24,7 +24,15 @@ def roll_dice(num_rolls, dice=six_sided):
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
     # END PROBLEM 1
-
+    outcome=0
+    sign=False
+    for i in range(num_rolls):
+        rolls=dice()
+        if rolls==1:
+            sign=True
+        else:
+            outcome+=rolls
+    return outcome if not sign else 1
 
 def free_bacon(score):
     """Return the points scored from rolling 0 dice (Free Bacon).
@@ -33,19 +41,16 @@ def free_bacon(score):
     """
     assert score < 100, 'The game should be over.'
     pi = FIRST_101_DIGITS_OF_PI
-
+    pi=pi//10**(100-score)
     # Trim pi to only (score + 1) digit(s)
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
     # END PROBLEM 2
-
     return pi % 10 + 3
 
 
 def take_turn(num_rolls, opponent_score, dice=six_sided):
-    """Simulate a turn rolling NUM_ROLLS dice, which may be 0 (Free Bacon).
-    Return the points scored for the turn by the current player.
-
+    """
     num_rolls:       The number of dice rolls that will be made.
     opponent_score:  The total score of the opponent.
     dice:            A function that simulates a single dice roll outcome.
@@ -58,6 +63,10 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
     # END PROBLEM 3
+    if num_rolls==0:
+        return free_bacon(opponent_score)
+    else:
+        return roll_dice(num_rolls, dice)
 
 
 def extra_turn(player_score, opponent_score):
@@ -80,7 +89,20 @@ def swine_align(player_score, opponent_score):
     # BEGIN PROBLEM 4a
     "*** YOUR CODE HERE ***"
     # END PROBLEM 4a
-
+    if player_score==0 or opponent_score==0:
+        return False
+    elif opponent_score<10:
+        return False
+    elif opponent_score>=10:
+        if GCD(player_score,opponent_score)>=10:
+            return True
+        else:
+            return False
+def GCD(x,y):
+    if max(x,y)%min(x,y)==0:
+        return min(x,y)
+    else:
+        return GCD(min(x,y),max(x,y)%min(x,y))
 
 def pig_pass(player_score, opponent_score):
     """Return whether the player gets an extra turn due to Pig Pass.
@@ -102,7 +124,10 @@ def pig_pass(player_score, opponent_score):
     # BEGIN PROBLEM 4b
     "*** YOUR CODE HERE ***"
     # END PROBLEM 4b
-
+    if player_score<opponent_score and opponent_score-player_score<3:
+        return True
+    else:
+        return False
 
 def other(who):
     """Return the other player, for a player WHO numbered 0 or 1.
@@ -118,41 +143,6 @@ def other(who):
 def silence(score0, score1):
     """Announce nothing (see Phase 2)."""
     return silence
-
-
-def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
-         goal=GOAL_SCORE, say=silence):
-    """Simulate a game and return the final scores of both players, with Player
-    0's score first, and Player 1's score second.
-
-    A strategy is a function that takes two total scores as arguments (the
-    current player's score, and the opponent's score), and returns a number of
-    dice that the current player will roll this turn.
-
-    strategy0:  The strategy function for Player 0, who plays first.
-    strategy1:  The strategy function for Player 1, who plays second.
-    score0:     Starting score for Player 0
-    score1:     Starting score for Player 1
-    dice:       A function of zero arguments that simulates a dice roll.
-    goal:       The game ends and someone wins when this score is reached.
-    say:        The commentary function to call at the end of the first turn.
-    """
-    who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
-    # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 5
-    # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
-    # BEGIN PROBLEM 6
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 6
-    return score0, score1
-
-
-#######################
-# Phase 2: Commentary #
-#######################
-
-
 def say_scores(score0, score1):
     """A commentary function that announces the score for each player."""
     print("Player 0 now has", score0, "and Player 1 now has", score1)
@@ -184,7 +174,6 @@ def announce_lead_changes(last_leader=None):
         return announce_lead_changes(leader)
     return say
 
-
 def both(f, g):
     """Return a commentary function that says what f says, then what g says.
 
@@ -204,7 +193,6 @@ def both(f, g):
     def say(score0, score1):
         return both(f(score0, score1), g(score0, score1))
     return say
-
 
 def announce_highest(who, last_score=0, running_high=0):
     """Return a commentary function that announces when WHO's score
@@ -226,9 +214,62 @@ def announce_highest(who, last_score=0, running_high=0):
     30 point(s)! The most yet for Player 1
     """
     assert who == 0 or who == 1, 'The who argument should indicate a player.'
+    if who==0:
+        return announce_highest(0)
+    else:
+
+        return announce_highest(1)
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
     # END PROBLEM 7
+
+def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
+         goal=GOAL_SCORE, say=both(announce_highest(0),both(announce_highest(1),announce_lead_changes))):
+    """Simulate a game and return the final scores of both players, with Player
+    0's score first, and Player 1's score second.
+
+    A strategy is a function that takes two total scores as arguments (the
+    current player's score, and the opponent's score), and returns a number of
+    dice that the current player will roll this turn.
+
+    strategy0:  The strategy function for Player 0, who plays first.
+    strategy1:  The strategy function for Player 1, who plays second.
+    score0:     Starting score for Player 0
+    score1:     Starting score for Player 1
+    dice:       A function of zero arguments that simulates a dice roll.
+    goal:       The game ends and someone wins when this score is reached.
+    say:        The commentary function to call at the end of the first turn.
+    """
+    who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
+    # BEGIN PROBLEM 5
+    "*** YOUR CODE HERE ***"
+    # END PROBLEM 5
+    # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
+    while score0<goal and score1<goal:
+        score0+=take_turn(strategy0(score0,score1),score1,dice)
+        say=say(score0,score1)
+        while extra_turn(score0,score1)==True and score0<goal:
+            score0+=take_turn(strategy0(score0,score1),score1,dice)
+            say=say(score0,score1)
+        if score0>=goal:
+                break
+        who=1
+        score1+=take_turn(strategy1(score1,score0),score0,dice)
+        say=say(score0,score1)
+        while extra_turn(score1,score0)==True and score1<goal:
+            score1+=take_turn(strategy1(score1,score0),score0,dice)
+            say=say(score0,score1)
+    return score0, score1
+    # BEGIN PROBLEM 6
+    "*** YOUR CODE HERE ***"
+    # END PROBLEM 6
+
+#######################
+# Phase 2: Commentary #
+#######################
+
+
+
 
 
 #######################
